@@ -28,7 +28,7 @@ const NoInternetConnection = () => {
       }, 2000);
     } else {
       Animated.timing(ribbonHeight, {
-        toValue: !isConnected ? responsiveHeight(12) : responsiveHeight(4),
+        toValue: responsiveHeight(12),
         duration: 2000,
         useNativeDriver: false,
       }).start();

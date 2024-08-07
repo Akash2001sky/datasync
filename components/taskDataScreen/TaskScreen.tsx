@@ -73,14 +73,17 @@ const TaskScreen: React.FC = () => {
     icon,
     onPress,
     toggleColor,
+    testID,
   }: {
     icon: ImageProps;
     onPress?: () => void;
     toggleColor?: boolean;
+    testID?: string;
   }) => {
     return (
       <TouchableOpacity
         style={{marginRight: responsiveWidth(3)}}
+        testID={testID}
         onPress={onPress}>
         <Image
           tintColor={toggleColor ? colors.liteGreen : colors.liteShadeBlue}
@@ -94,8 +97,16 @@ const TaskScreen: React.FC = () => {
   const renderTaskList = ({item}: {item: TaskTypes}) => (
     <View style={styles.taskContainer}>
       <Text style={styles.taskDescription}>{item.description}</Text>
-      {renderButton({icon: EditImg, onPress: () => handleEditTask(item)})}
-      {renderButton({icon: TrashImg, onPress: () => handleDeleteTask(item)})}
+      {renderButton({
+        icon: EditImg,
+        onPress: () => handleEditTask(item),
+        testID: 'EditBtn',
+      })}
+      {renderButton({
+        icon: TrashImg,
+        onPress: () => handleDeleteTask(item),
+        testID: 'DeleteBtn',
+      })}
       {renderButton({icon: checkBox, toggleColor: item.isComplete})}
     </View>
   );
@@ -104,13 +115,17 @@ const TaskScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
+          testID="input_box"
           style={styles.input}
           value={newDescription}
           placeholderTextColor={colors.liteShadeBlue}
           placeholder={configJSON.placeholderText}
           onChangeText={setNewDescription}
         />
-        <Pressable style={styles.addButton} onPress={handleAddOrUpdateTask}>
+        <Pressable
+          testID="addAndUpdateBtn"
+          style={styles.addButton}
+          onPress={handleAddOrUpdateTask}>
           <Image
             tintColor={colors.mediumShadeBlue}
             source={editingTask ? EditImg : plusImg}
@@ -119,8 +134,12 @@ const TaskScreen: React.FC = () => {
           />
         </Pressable>
       </View>
-      <View style={{padding: responsiveHeight(1)}}>
+      <View style={styles.renderListStyle}>
         <FlatList
+          testID="taskList"
+          showsVerticalScrollIndicator={false}
+          maxToRenderPerBatch={10}
+          contentContainerStyle={styles.contentContainerStyle}
           data={tasks.sorted('createdAt')}
           keyExtractor={item => item._id.toHexString()}
           renderItem={renderTaskList}
@@ -150,6 +169,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 4,
     padding: 8,
+    color: colors.white,
   },
   addButton: {
     marginLeft: 8,
@@ -179,6 +199,8 @@ const styles = StyleSheet.create({
     height: responsiveHeight(4),
     width: responsiveWidth(7),
   },
+  renderListStyle: {padding: responsiveHeight(1), flex: 1},
+  contentContainerStyle: {padding: responsiveWidth(3)},
 });
 
 export default TaskScreen;

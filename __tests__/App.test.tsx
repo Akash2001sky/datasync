@@ -6,12 +6,68 @@ import 'react-native';
 import React from 'react';
 import App from '../App';
 
-// Note: import explicitly to use the types shipped with jest.
-import {it} from '@jest/globals';
+import {render} from '@testing-library/react-native';
 
-// Note: test renderer must be required after react-native.
-import renderer from 'react-test-renderer';
+jest.mock('@react-native-community/netinfo', () => {
+  return {
+    addEventListener: jest.fn(CB => CB({isConnected: true})),
+  };
+});
 
-it('renders correctly', () => {
-  renderer.create(<App />);
+jest.mock('@realm/react', () => {
+  const mockRealmProvider = ({
+    children,
+    schema,
+    schemaVersion,
+    onMigration,
+  }) => {
+    const mockOldRealm = {
+      schemaVersion: 2,
+      objects: jest.fn(name => {
+        if (name === 'Task') {
+          return [{isComplete: true}, {isComplete: true}];
+        }
+        return [];
+      }),
+    };
+
+    const mockNewRealm = {
+      schemaVersion: 3,
+      objects: jest.fn(name => {
+        if (name === 'Task') {
+          return [{isComplete: true}, {isComplete: true}];
+        }
+        return [];
+      }),
+    };
+
+    if (onMigration) {
+      onMigration(mockOldRealm, mockNewRealm);
+      onMigration(mockNewRealm);
+    }
+
+    return <>{children}</>;
+  };
+
+  return {
+    RealmProvider: mockRealmProvider,
+    useRealm: jest.fn(() => ({})),
+    useQuery: jest.fn(() => ({
+      sorted: jest.fn(),
+    })),
+    Realm: {
+      Object: jest.fn(),
+    },
+  };
+});
+jest.mock('../databaseLocal/database', () => {
+  return {
+    filterTasks: jest.fn(),
+  };
+});
+describe('Task Screen Component', () => {
+  test('renders correctly', () => {
+    const app = render(<App />);
+    expect(app).toBeDefined();
+  });
 });
